@@ -1,0 +1,1 @@
+grep "fail" auth.log
