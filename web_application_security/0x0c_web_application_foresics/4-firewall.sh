@@ -1,2 +1,2 @@
 #!/bin/bash
-grep 'iptables' auth.log | grep 'ACCEPT' | wc -l
+grep 'iptables' auth.log 
