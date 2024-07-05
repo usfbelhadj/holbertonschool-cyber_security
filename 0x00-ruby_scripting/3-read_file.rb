@@ -1,4 +1,4 @@
-require 'json'
+require 'jcson'
 
 def count_user_ids_in_json(file_path)
   begin
