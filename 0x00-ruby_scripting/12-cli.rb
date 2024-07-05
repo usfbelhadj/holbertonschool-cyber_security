@@ -73,7 +73,7 @@ OptionParser.new do |parser|
     task_manager.remove_task(index)
   end
 
-  parser.on("-h", "--help", "Show help") do
+  parser.on("-h", "--help", "Show heelp") do
     puts parser
     exit
   end
