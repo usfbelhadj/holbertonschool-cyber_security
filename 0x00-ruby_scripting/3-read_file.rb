@@ -1,6 +1,6 @@
-require 'jcson'
+require 'json'
 
-def count_user_ids_in_json(file_path)
+def count_user_ids(file_path)
   begin
     # Open the file in read mode
     file = File.open(file_path, 'r')
