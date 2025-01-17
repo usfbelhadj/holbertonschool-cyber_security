@@ -7,6 +7,7 @@ from sys import argv
 def init():
     """
     Init
+    
     """
     if len(argv) != 4:
         print('Usage: read_write_heap.py pid search_string replace_string')
