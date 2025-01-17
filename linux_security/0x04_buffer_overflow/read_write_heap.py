@@ -1,48 +1,96 @@
 #!/usr/bin/python3
-""" a script that finds a str2 in the heap
-    of a running process, and replaces it"""
-from sys import argv
+
+"""
+read_write_heap.py - Script to search and replace a string in the heap of a running process.
+
+Usage:
+    python3 read_write_heap.py pid search_string replace_string
+
+Arguments:
+    pid - Process ID of the target process
+    search_string - ASCII string to search for in the heap
+    replace_string - ASCII string to replace the search_string
+"""
+
+import sys
 
 
-def init():
+def find_and_replace_in_heap(pid, search_string, replace_string):
     """
-    Init
-    
+    Find and replace a string in the heap memory of a running process.
+
+    Parameters:
+        pid (int): Process ID of the target process
+        search_string (bytes): String to search for in the heap
+        replace_string (bytes): String to replace the search_string
     """
-    if len(argv) != 4:
-        print('Usage: read_write_heap.py pid search_string replace_string')
-        exit(1)
-    pid = argv[1]
-    search_string = argv[2]
-    replace_string = argv[3]
+    maps_path = f"/proc/{pid}/maps"
+    mem_path = f"/proc/{pid}/mem"
+
     try:
-        maps_file = open('/proc/{}/maps'.format(pid), 'r')
+        # Open the maps file to locate the heap segment
+        with open(maps_path, "r") as maps_file:
+            heap = None
+            for line in maps_file:
+                if "[heap]" in line:
+                    heap = line
+                    break
+
+            if not heap:
+                print("Error: Could not find the heap segment.")
+
+            # Parse the heap segment's memory range
+            heap_start, heap_end = [int(x, 16)
+                                    for x in heap.split()[0].split("-")]
+        # Open the memory file to search and replace in the heap
+        with open(mem_path, "r+b") as mem_file:
+            mem_file.seek(heap_start)
+            heap_data = mem_file.read(heap_end - heap_start)
+
+            # Ensure the replacement string is not longer than the search string
+            if len(replace_string) > len(search_string):
+                print(
+                    "Warning: Replacement string is longer than the search string. This may cause memory corruption.")
+
+            # Search for the target string in the heap
+            offset = heap_data.find(search_string)
+            if offset == -1:
+                print("Error: Search string not found in the heap.")
+                sys.exit(1)
+
+            # Replace the string in the memory
+            mem_file.seek(heap_start + offset)
+            mem_file.write(replace_string.ljust(len(search_string), b'\x00'))
+
+            print(
+                "SUCCESS!")
+
+    except PermissionError:
+        print("Error: Permission denied. Try running as sudo.")
+        sys.exit(1)
+    except FileNotFoundError:
+        print("Error: Process not found. Is the PID correct?")
+        sys.exit(1)
     except Exception as e:
-        print(e)
-        exit(1)
-    try:
-        mem_file = open('/proc/{}/mem'.format(pid), 'r+b', 0)
-    except Exception as e:
-        maps_file.close()
-        print(e)
-        exit(1)
-    for line in maps_file.readlines():
-        line_split = line.split()
-        if '[heap]' in line_split:
-            mem = line_split[0].split('-')
-            mem_start = int(mem[0], 16)
-            mem_end = int(mem[1], 16)
-            mem_file.seek(mem_start)
-            string_space = mem_file.read(mem_end - mem_start)
-            string_position = string_space.find(str.encode(search_string))
-            if string_position == -1:
-                break
-            mem_file.seek(mem_start + string_position)
-            mem_file.write(str.encode(replace_string) + b'\x00')
-            break
-    mem_file.close()
-    maps_file.close()
+        print(f"Unexpected error: {e}")
+        sys.exit(1)
 
 
-if __name__ == '__main__':
-    init()
+def main():
+    """
+    Main function to handle input arguments and execute the heap string replacement.
+    """
+
+    try:
+        pid = int(sys.argv[1])
+    except ValueError:
+        print("Error: PID must be an integer.")
+
+    search_string = sys.argv[2].encode()
+    replace_string = sys.argv[3].encode()
+
+    find_and_replace_in_heap(pid, search_string, replace_string)
+
+
+if __name__ == "__main__":
+    main()
