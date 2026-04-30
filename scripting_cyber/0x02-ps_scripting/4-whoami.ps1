@@ -7,6 +7,7 @@ function Get-CurrentUser {
     Write-Output $env:USERNAME
 }
 
+
 function Main {
     Get-CurrentUser
 }
