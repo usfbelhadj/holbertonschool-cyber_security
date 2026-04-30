@@ -1,17 +1,11 @@
 #!/usr/bin/env pwsh
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-
-function Get-MachineInfo {
-    $hostname = $env:COMPUTERNAME
-    $os       = (Get-CimInstance Win32_OperatingSystem).Caption
-    Write-Output "Hostname: $hostname"
-    Write-Output "OS: $os"
+function Get-WhoAmI {
+    whoami
 }
 
 function Main {
-    Get-MachineInfo
+    Get-WhoAmI
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
