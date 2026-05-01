@@ -3,19 +3,17 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-function Get-MachineInfo {
-    # Works on both Linux and Windows
-    $hostname = [System.Net.Dns]::GetHostName()
-
-    # Cross-platform OS info
-    $os = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
-
-    Write-Output "Hostname: $hostname"
-    Write-Output "OS: $os"
+function Get-LocalUserStatus {
+    Get-LocalUser |
+        Sort-Object Name |
+        ForEach-Object {
+            $status = if ($_.Enabled) { "Enabled" } else { "Disabled" }
+            Write-Output "$($_.Name) $status"
+        }
 }
 
 function Main {
-    Get-MachineInfo
+    Get-LocalUserStatus
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
