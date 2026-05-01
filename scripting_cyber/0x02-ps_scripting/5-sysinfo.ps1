@@ -1,24 +1,34 @@
 #!/usr/bin/env pwsh
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'SilentlyContinue'
 
-function Get-SHA256 {
-    param ([string] $Input)
+$DEFAULT_PORTS = @(22, 80, 443, 3306, 8080)
 
-    $bytes  = [System.Text.Encoding]::UTF8.GetBytes($Input)
-    $hash   = [System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)
-    $hex    = ($hash | ForEach-Object { $_.ToString("x2") }) -join ''
+function Invoke-PortScan {
+    param (
+        [string]  $Target,
+        [int[]]   $Ports   = $DEFAULT_PORTS,
+        [int]     $Timeout = 500
+    )
 
-    Write-Output "SHA256: $hex"
+    foreach ($port in $Ports) {
+        $tcp    = [System.Net.Sockets.TcpClient]::new()
+        $result = $tcp.BeginConnect($Target, $port, $null, $null)
+        $open   = $result.AsyncWaitHandle.WaitOne($Timeout, $false)
+        $tcp.Close()
+
+        $status = if ($open) { "OPEN" } else { "CLOSED" }
+        Write-Output "$port $status"
+    }
 }
 
 function Main {
     if (-not $args[0]) {
-        Write-Output "Usage: pwsh 10-hash.ps1 <word>"
+        Write-Output "Usage: pwsh 11-portscan.ps1 <target>"
         exit 1
     }
-    Get-SHA256 -Input $args[0]
+    Invoke-PortScan -Target $args[0]
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
