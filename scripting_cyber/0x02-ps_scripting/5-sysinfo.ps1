@@ -4,8 +4,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 function Get-MachineInfo {
-    $hostname = $env:COMPUTERNAME
-    $os       = (Get-CimInstance Win32_OperatingSystem).Caption
+    # Works on both Linux and Windows
+    $hostname = [System.Net.Dns]::GetHostName()
+
+    # Cross-platform OS info
+    $os = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
+
     Write-Output "Hostname: $hostname"
     Write-Output "OS: $os"
 }
