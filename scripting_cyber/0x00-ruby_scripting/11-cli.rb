@@ -26,8 +26,7 @@ def list_tasks
     puts "No tasks found."
   else
     puts "Tasks:"
-    tasks.each_with_index { |task, i| puts "   #{i + 1}. #{task}" }
-    
+    tasks.each_with_index { |task, i| puts "#{i + 1}. #{task}" }
   end
 end
 
