@@ -28,7 +28,7 @@ def list_tasks
     puts "Tasks:"
     puts
     tasks.each_with_index { |task, i| puts "   #{i + 1}. #{task}" }
-    puts "  "
+    
   end
 end
 
